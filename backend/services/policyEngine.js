@@ -1,4 +1,5 @@
 const prisma = require('../config/db');
+const { generateRecoveryMessage } = require('./messageGenerator');
 
 /**
  * Centralized deterministic Policy Configuration.
@@ -539,13 +540,14 @@ function evaluatePolicy(event, diagnosis, proposedMessage = null) {
 const activePolicyJobs = new Set();
 
 /**
- * Async policy evaluation pipeline:
+ * Async recovery proposal & policy evaluation pipeline:
  * 1. Checks duplicate jobs
- * 2. Evaluates policy deterministically
- * 3. Persists policy decision in MySQL and sets status = 'decided'
- * 4. Emits 'policy-decision' Socket.io event with safe payload
+ * 2. Generates recovery message proposal (or deterministic fallback)
+ * 3. Evaluates policy deterministically against proposed message
+ * 4. Persists message & policy outcome in MySQL, setting status = 'checked'
+ * 5. Emits 'recovery-proposal' Socket.io event with safe payload
  */
-async function processEventPolicy(event, diagnosis, io, proposedMessage = null) {
+async function processEventPolicy(event, diagnosis, io, customProposedMessage = null) {
   if (!event || !event.eventId) return null;
 
   if (activePolicyJobs.has(event.eventId)) {
@@ -555,33 +557,66 @@ async function processEventPolicy(event, diagnosis, io, proposedMessage = null) 
   activePolicyJobs.add(event.eventId);
 
   try {
-    const policyResult = evaluatePolicy(event, diagnosis, proposedMessage);
+    // Generate recovery message proposal (or fallback) if not explicitly provided
+    let messageProposal;
+    if (customProposedMessage && typeof customProposedMessage === 'object' && customProposedMessage.message) {
+      messageProposal = customProposedMessage;
+    } else if (typeof customProposedMessage === 'string') {
+      messageProposal = {
+        message: customProposedMessage,
+        channel: 'sms',
+        tone: 'professional',
+        action: diagnosis.recommendedAction || 'escalate'
+      };
+    } else {
+      messageProposal = await generateRecoveryMessage(event, diagnosis);
+    }
 
-    // Persist policy outcome into MySQL and update status to 'decided'
+    // Evaluate deterministic policy against the generated message
+    const policyResult = evaluatePolicy(event, diagnosis, messageProposal.message);
+
+    // Persist message proposal and policy outcome into MySQL, updating status to 'checked'
     const updated = await prisma.recoveryEvent.update({
       where: { eventId: event.eventId },
       data: {
+        recoveryMessage: messageProposal.message,
+        messageChannel: messageProposal.channel,
+        messageTone: messageProposal.tone,
+        messageAction: messageProposal.action,
         policyDecision: policyResult.decision,
         policyChecks: policyResult.checks,
         policyFailedChecks: policyResult.failedChecks,
         safeAlternative: policyResult.safeAlternative,
-        status: 'decided'
+        status: 'checked'
       }
     });
 
-    console.log(`[PolicyEngine] Persisted policy decision for ${updated.eventId} -> decision: ${policyResult.decision}, status: decided`);
+    console.log(`[PolicyEngine] Persisted recovery proposal & policy for ${updated.eventId} -> decision: ${policyResult.decision}, status: checked`);
 
-    // Emit 'policy-decision' over Socket.io with strictly safe payload
+    // Emit 'recovery-proposal' over Socket.io with strictly safe payload
     if (io) {
-      const policyPayload = {
+      const recoveryProposalPayload = {
+        eventId: updated.eventId,
+        message: updated.recoveryMessage,
+        channel: updated.messageChannel,
+        tone: updated.messageTone,
+        action: updated.messageAction,
+        policyDecision: updated.policyDecision,
+        failedChecks: updated.policyFailedChecks,
+        safeAlternative: updated.safeAlternative,
+        status: updated.status
+      };
+      io.emit('recovery-proposal', recoveryProposalPayload);
+
+      // Also emit policy-decision for backward compatibility
+      io.emit('policy-decision', {
         eventId: updated.eventId,
         decision: updated.policyDecision,
         checks: updated.policyChecks,
         failedChecks: updated.policyFailedChecks,
         safeAlternative: updated.safeAlternative,
         status: updated.status
-      };
-      io.emit('policy-decision', policyPayload);
+      });
     }
 
     return updated;

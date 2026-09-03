@@ -15,7 +15,7 @@ model RecoveryEvent {
   amount             Decimal  @db.Decimal(10, 2)
   failureReason      String
   timestamp          DateTime
-  recoverable        Boolean  // Hidden simulation ground truth - never exposed to AI or policy output
+  recoverable        Boolean  // Hidden simulation ground truth - never exposed to AI or client
   status             String   @default("new") // "new", "diagnosed", "decided", "checked", "executed", "blocked", "escalated"
   
   // AI Diagnosis fields
@@ -23,6 +23,12 @@ model RecoveryEvent {
   confidence         Float?
   recommendedAction  String?  // "retry", "send_link", "escalate"
   evidence           Json?
+
+  // Recovery Message Proposal fields
+  recoveryMessage    String?  @db.Text
+  messageChannel     String?  // "sms", "email", "whatsapp"
+  messageTone        String?  // "professional", "helpful"
+  messageAction      String?  // "retry", "send_link", "escalate"
 
   // Deterministic Policy Engine fields
   policyDecision     String?  // "allow", "block", "escalate"
