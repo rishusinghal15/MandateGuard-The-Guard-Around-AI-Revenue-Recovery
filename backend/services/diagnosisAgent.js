@@ -239,6 +239,12 @@ async function processEventDiagnosis(event, io) {
       io.emit('diagnosis-ready', diagnosisPayload);
     }
 
+    // Trigger deterministic Policy Engine asynchronously without blocking
+    const { processEventPolicy } = require('./policyEngine');
+    processEventPolicy(updated, diagnosis, io).catch((policyErr) => {
+      console.error(`[Diagnosis -> Policy Error] for ${updated.eventId}:`, policyErr.message);
+    });
+
     return updated;
   } catch (error) {
     console.error(`[DiagnosisAgent Error] Failed to process diagnosis for ${event.eventId}:`, error.message);

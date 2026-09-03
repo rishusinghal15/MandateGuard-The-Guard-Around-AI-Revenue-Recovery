@@ -8,24 +8,30 @@ generator client {
 }
 
 model RecoveryEvent {
-  id                Int      @id @default(autoincrement())
-  eventId           String   @unique
-  eventType         String   // "payment_failed", "subscription_failed", "cart_abandoned"
-  customerId        String
-  amount            Decimal  @db.Decimal(10, 2)
-  failureReason     String
-  timestamp         DateTime
-  recoverable       Boolean  // Hidden simulation ground truth - never exposed to AI
-  status            String   @default("new") // "new", "diagnosed", "decided", "checked", "executed", "blocked", "escalated"
+  id                 Int      @id @default(autoincrement())
+  eventId            String   @unique
+  eventType          String   // "payment_failed", "subscription_failed", "cart_abandoned"
+  customerId         String
+  amount             Decimal  @db.Decimal(10, 2)
+  failureReason      String
+  timestamp          DateTime
+  recoverable        Boolean  // Hidden simulation ground truth - never exposed to AI or policy output
+  status             String   @default("new") // "new", "diagnosed", "decided", "checked", "executed", "blocked", "escalated"
   
   // AI Diagnosis fields
-  rootCause         String?  @db.Text
-  confidence        Float?
-  recommendedAction String?  // "retry", "send_link", "escalate"
-  evidence          Json?
+  rootCause          String?  @db.Text
+  confidence         Float?
+  recommendedAction  String?  // "retry", "send_link", "escalate"
+  evidence           Json?
 
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  // Deterministic Policy Engine fields
+  policyDecision     String?  // "allow", "block", "escalate"
+  policyChecks       Json?
+  policyFailedChecks Json?
+  safeAlternative    String?  @db.Text
+
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
 
   @@index([customerId])
   @@index([status])
