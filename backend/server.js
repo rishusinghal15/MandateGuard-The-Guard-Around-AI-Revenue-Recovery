@@ -6,6 +6,7 @@ const { Server } = require('socket.io');
 const { startSimulator, stopSimulator } = require('./services/eventSimulator');
 const { executeSimulatedRecovery } = require('./services/simulatedRecovery');
 const { getAuditLogs } = require('./services/auditLogger');
+const { getRecoveryComparison } = require('./services/comparisonService');
 
 const app = express();
 const server = http.createServer(app);
@@ -61,6 +62,33 @@ app.post('/api/recovery/:eventId/simulate', async (req, res) => {
     return res.status(500).json({
       status: 'error',
       message: 'Failed to process simulated recovery.'
+    });
+  }
+});
+
+// Recovery Comparison endpoint (Naive AI vs MandateGuard Policy Guard)
+app.get('/api/recovery/:eventId/comparison', async (req, res) => {
+  try {
+    const { eventId } = req.params;
+    if (!eventId) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'eventId parameter is required.'
+      });
+    }
+
+    const comparison = await getRecoveryComparison(eventId);
+
+    if (comparison.status === 'not_found') {
+      return res.status(404).json(comparison);
+    }
+
+    return res.status(200).json(comparison);
+  } catch (error) {
+    console.error('[API Error] /api/recovery/:eventId/comparison failed:', error.message);
+    return res.status(500).json({
+      status: 'error',
+      message: 'Failed to compute recovery comparison.'
     });
   }
 });

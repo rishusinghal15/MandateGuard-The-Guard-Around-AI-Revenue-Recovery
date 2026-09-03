@@ -4,6 +4,7 @@ import { DecisionBanner } from './DecisionBanner';
 import { DiagnosisPanel } from './DiagnosisPanel';
 import { RecoveryMessagePanel } from './RecoveryMessagePanel';
 import { PolicyGuardPanel } from './PolicyGuardPanel';
+import { RecoveryComparison } from './RecoveryComparison';
 import { AuditTrail } from './AuditTrail';
 import { Clock, CreditCard, User, AlertOctagon, HelpCircle } from 'lucide-react';
 
@@ -38,7 +39,7 @@ export function EventDetail({ event }) {
         <AlertOctagon className="h-10 w-10 text-slate-600" />
         <h3 className="text-base font-semibold text-slate-300">No Event Selected</h3>
         <p className="text-xs max-w-sm text-slate-400">
-          Select an event from the live feed on the left to inspect its real-time AI diagnosis, proposed recovery message, deterministic policy authorization, and immutable audit trail.
+          Select an event from the live feed on the left to inspect its real-time AI diagnosis, proposed recovery message, deterministic policy authorization, safety comparison, and immutable audit trail.
         </p>
       </div>
     );
@@ -112,6 +113,11 @@ export function EventDetail({ event }) {
         <div>
           <PolicyGuardPanel event={event} />
         </div>
+      </div>
+
+      {/* AI Safety Comparison: Naive AI vs MandateGuard Policy Guard */}
+      <div>
+        <RecoveryComparison event={event} />
       </div>
 
       {/* Persistent Audit Trail Timeline */}
