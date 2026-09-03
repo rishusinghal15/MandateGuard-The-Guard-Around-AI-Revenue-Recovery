@@ -3,6 +3,7 @@ const http = require('http');
 const express = require('express');
 const cors = require('cors');
 const { Server } = require('socket.io');
+const { startSimulator, stopSimulator } = require('./services/eventSimulator');
 
 const app = express();
 const server = http.createServer(app);
@@ -40,7 +41,20 @@ const PORT = process.env.PORT || 5001;
 if (process.env.NODE_ENV !== 'test') {
   server.listen(PORT, () => {
     console.log(`MandateGuard backend running on port ${PORT}`);
+    // Start realistic event simulator
+    startSimulator(io);
   });
 }
+
+// Graceful shutdown handling
+process.on('SIGINT', () => {
+  stopSimulator();
+  process.exit(0);
+});
+
+process.on('SIGTERM', () => {
+  stopSimulator();
+  process.exit(0);
+});
 
 module.exports = { app, server, io };
