@@ -1,15 +1,46 @@
-import React from 'react';
-import { ShieldCheck, ShieldAlert, AlertTriangle, Clock } from 'lucide-react';
+import React, { useState } from 'react';
+import { ShieldCheck, ShieldAlert, AlertTriangle, Clock, Play, CheckCircle2, Lock } from 'lucide-react';
+import axios from 'axios';
 
-export function DecisionBanner({ event }) {
+const BACKEND_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+
+export function DecisionBanner({ event, onSimulationComplete }) {
   if (!event) return null;
+
+  const [isSimulating, setIsSimulating] = useState(false);
+  const [simulationResult, setSimulationResult] = useState(null);
+  const [simulationError, setSimulationError] = useState(null);
 
   const decision = event.policyDecision;
   const failedChecks = event.policyFailedChecks || [];
   const safeAlternative = event.safeAlternative;
+  const executionStatus = simulationResult?.status || event.executionStatus;
+  const executionReference = simulationResult?.executionReference || event.executionReference;
+
+  const handleSimulateRecovery = async () => {
+    if (!event.eventId || isSimulating) return;
+
+    try {
+      setIsSimulating(true);
+      setSimulationError(null);
+      const res = await axios.post(`${BACKEND_URL}/api/recovery/${event.eventId}/simulate`);
+      setSimulationResult(res.data);
+      if (onSimulationComplete) {
+        onSimulationComplete(res.data);
+      }
+    } catch (err) {
+      console.error('[Simulation Error]', err);
+      const msg = err.response?.data?.message || err.message || 'Simulation request failed.';
+      setSimulationError(msg);
+    } finally {
+      setIsSimulating(false);
+    }
+  };
 
   // 1. ALLOWED
   if (decision === 'allow') {
+    const isExecuted = executionStatus === 'simulated_success';
+
     return (
       <div className="bg-emerald-950/40 border border-emerald-500/50 rounded-xl p-5 mb-5 shadow-lg shadow-emerald-950/30">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-emerald-500/30">
@@ -20,21 +51,36 @@ export function DecisionBanner({ event }) {
             <div>
               <div className="flex items-center space-x-2">
                 <h2 className="text-lg font-bold text-emerald-300 tracking-tight">
-                  RECOVERY AUTHORIZED
+                  {isExecuted ? 'SIMULATED RECOVERY COMPLETE' : 'RECOVERY AUTHORIZED'}
                 </h2>
                 <span className="px-2 py-0.5 text-[11px] font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 rounded">
-                  PASSED ALL GUARDRAILS
+                  {isExecuted ? 'EXECUTED (SIM)' : 'PASSED ALL GUARDRAILS'}
                 </span>
               </div>
               <p className="text-xs text-emerald-400/80">
-                Deterministic policy verification complete. Action approved for execution.
+                {isExecuted
+                  ? 'Simulated recovery executed and logged into immutable audit ledger.'
+                  : 'Deterministic policy verification complete. Action cleared for simulation.'}
               </p>
             </div>
           </div>
-          <div className="text-right">
-            <span className="inline-block px-2.5 py-1 text-[11px] font-medium bg-emerald-900/60 text-emerald-300 border border-emerald-700/60 rounded">
-              SIMULATION &bull; NO REAL CHARGE
-            </span>
+
+          <div className="flex items-center space-x-2">
+            {!isExecuted ? (
+              <button
+                onClick={handleSimulateRecovery}
+                disabled={isSimulating}
+                className="flex items-center space-x-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs rounded-lg shadow-md shadow-emerald-950/50 transition-all cursor-pointer disabled:opacity-50"
+              >
+                <Play className={`h-3.5 w-3.5 ${isSimulating ? 'animate-spin' : ''}`} />
+                <span>{isSimulating ? 'Simulating...' : 'Simulate Recovery'}</span>
+              </button>
+            ) : (
+              <div className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-emerald-900/60 border border-emerald-500/40 text-emerald-200 text-xs font-mono font-bold">
+                <CheckCircle2 className="h-4 w-4 text-emerald-400" />
+                <span>REF: {executionReference}</span>
+              </div>
+            )}
           </div>
         </div>
 
@@ -48,15 +94,21 @@ export function DecisionBanner({ event }) {
             <span className="font-bold text-emerald-200 uppercase font-mono">{event.messageChannel || 'SMS'}</span>
           </div>
           <div className="bg-emerald-900/20 p-2.5 rounded-lg border border-emerald-500/20">
-            <span className="text-emerald-400/70 block text-[10px] uppercase tracking-wider">Guardrail Compliance</span>
-            <span className="font-bold text-emerald-200">100% Deterministic</span>
+            <span className="text-emerald-400/70 block text-[10px] uppercase tracking-wider">Simulation Boundary</span>
+            <span className="font-bold text-emerald-200">Simulation Only &bull; No Real Charge</span>
           </div>
         </div>
+
+        {simulationError && (
+          <div className="mt-3 p-2.5 rounded-lg bg-rose-950/40 border border-rose-500/30 text-rose-300 text-xs">
+            {simulationError}
+          </div>
+        )}
       </div>
     );
   }
 
-  // 2. BLOCKED (Key demo moment)
+  // 2. BLOCKED
   if (decision === 'block') {
     const primaryFailure = failedChecks[0];
 
@@ -81,9 +133,11 @@ export function DecisionBanner({ event }) {
               </p>
             </div>
           </div>
-          <div className="text-right">
-            <span className="inline-block px-2.5 py-1 text-[11px] font-semibold bg-rose-900/80 text-rose-200 border border-rose-600 rounded">
-              EXECUTION PREVENTED
+
+          <div className="flex items-center space-x-2">
+            <span className="inline-flex items-center space-x-1 px-3 py-1.5 text-xs font-semibold bg-rose-900/80 text-rose-200 border border-rose-600 rounded-lg">
+              <Lock className="h-3.5 w-3.5" />
+              <span>Execution prevented by Policy Guard</span>
             </span>
           </div>
         </div>
@@ -141,9 +195,10 @@ export function DecisionBanner({ event }) {
               </p>
             </div>
           </div>
-          <div className="text-right">
-            <span className="inline-block px-2.5 py-1 text-[11px] font-medium bg-amber-900/60 text-amber-300 border border-amber-700/60 rounded">
-              HUMAN TRIAGE
+
+          <div className="flex items-center space-x-2">
+            <span className="inline-block px-3 py-1.5 text-xs font-semibold bg-amber-900/60 text-amber-300 border border-amber-700/60 rounded-lg">
+              Manual review required — no automated execution
             </span>
           </div>
         </div>
@@ -164,7 +219,7 @@ export function DecisionBanner({ event }) {
     );
   }
 
-  // 4. Pending state
+  // 4. Pending
   return (
     <div className="bg-slate-800/80 border border-slate-700/60 rounded-xl p-5 mb-5">
       <div className="flex items-center space-x-3">

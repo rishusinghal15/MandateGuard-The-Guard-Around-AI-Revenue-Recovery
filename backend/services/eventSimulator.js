@@ -126,6 +126,24 @@ async function simulateAndPersist(io) {
 
     console.log(`[Simulator] Persisted event ${createdEvent.eventId} (${createdEvent.eventType}, ₹${createdEvent.amount})`);
 
+    // Log append-only audit event: EVENT_RECEIVED
+    const { logAuditEvent } = require('./auditLogger');
+    logAuditEvent({
+      eventId: createdEvent.eventId,
+      action: 'event_ingestion',
+      decision: 'recorded',
+      status: 'EVENT_RECEIVED',
+      reason: `Failed ${createdEvent.eventType} event received and persisted into MySQL.`,
+      metadata: {
+        eventType: createdEvent.eventType,
+        amount: Number(createdEvent.amount),
+        failureReason: createdEvent.failureReason,
+        customerId: createdEvent.customerId
+      }
+    }).catch((auditErr) => {
+      console.error(`[Simulator -> Audit Error] for ${createdEvent.eventId}:`, auditErr.message);
+    });
+
     // Emit safe event payload to connected clients
     if (io) {
       const safePayload = toSafeEventPayload(createdEvent);

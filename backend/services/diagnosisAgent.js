@@ -226,6 +226,24 @@ async function processEventDiagnosis(event, io) {
 
     console.log(`[DiagnosisAgent] Persisted diagnosis for ${updated.eventId} -> status: diagnosed`);
 
+    // Log append-only audit event: AI_DIAGNOSIS_COMPLETED
+    const { logAuditEvent } = require('./auditLogger');
+    logAuditEvent({
+      eventId: updated.eventId,
+      action: 'diagnosis',
+      decision: 'completed',
+      status: 'AI_DIAGNOSIS_COMPLETED',
+      reason: `AI diagnosed root cause: "${updated.rootCause}" with ${Math.round((updated.confidence || 0) * 100)}% confidence. Recommended action: ${updated.recommendedAction}.`,
+      metadata: {
+        rootCause: updated.rootCause,
+        confidence: updated.confidence,
+        recommendedAction: updated.recommendedAction,
+        evidenceCount: Array.isArray(updated.evidence) ? updated.evidence.length : 0
+      }
+    }).catch((auditErr) => {
+      console.error(`[Diagnosis -> Audit Error] for ${updated.eventId}:`, auditErr.message);
+    });
+
     // Emit 'diagnosis-ready' over Socket.io with strictly safe payload
     if (io) {
       const diagnosisPayload = {

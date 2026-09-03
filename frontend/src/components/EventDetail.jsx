@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { PipelineStatus } from './PipelineStatus';
 import { DecisionBanner } from './DecisionBanner';
 import { DiagnosisPanel } from './DiagnosisPanel';
 import { RecoveryMessagePanel } from './RecoveryMessagePanel';
 import { PolicyGuardPanel } from './PolicyGuardPanel';
+import { AuditTrail } from './AuditTrail';
 import { Clock, CreditCard, User, AlertOctagon, HelpCircle } from 'lucide-react';
 
 function formatINR(amount) {
@@ -29,13 +30,15 @@ function formatEventType(type) {
 }
 
 export function EventDetail({ event }) {
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
+
   if (!event) {
     return (
       <div className="bg-slate-800/50 border border-slate-700/60 rounded-xl p-12 text-center text-slate-400 flex flex-col items-center justify-center space-y-3">
         <AlertOctagon className="h-10 w-10 text-slate-600" />
         <h3 className="text-base font-semibold text-slate-300">No Event Selected</h3>
         <p className="text-xs max-w-sm text-slate-400">
-          Select an event from the live feed on the left to inspect its real-time AI diagnosis, proposed recovery message, and deterministic policy authorization.
+          Select an event from the live feed on the left to inspect its real-time AI diagnosis, proposed recovery message, deterministic policy authorization, and immutable audit trail.
         </p>
       </div>
     );
@@ -44,6 +47,10 @@ export function EventDetail({ event }) {
   const formattedAmount = formatINR(
     typeof event.amount === 'number' ? event.amount : Number(event.amount) || 0
   );
+
+  const handleSimulationComplete = () => {
+    setRefreshTrigger((prev) => prev + 1);
+  };
 
   return (
     <div className="space-y-5">
@@ -91,7 +98,7 @@ export function EventDetail({ event }) {
       </div>
 
       {/* Hero Decision Banner */}
-      <DecisionBanner event={event} />
+      <DecisionBanner event={event} onSimulationComplete={handleSimulationComplete} />
 
       {/* 2-Column Responsive Operational Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
@@ -105,6 +112,11 @@ export function EventDetail({ event }) {
         <div>
           <PolicyGuardPanel event={event} />
         </div>
+      </div>
+
+      {/* Persistent Audit Trail Timeline */}
+      <div>
+        <AuditTrail eventId={event.eventId} refreshTrigger={refreshTrigger} />
       </div>
     </div>
   );

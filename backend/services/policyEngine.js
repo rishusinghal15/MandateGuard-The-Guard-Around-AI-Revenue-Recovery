@@ -593,6 +593,74 @@ async function processEventPolicy(event, diagnosis, io, customProposedMessage = 
 
     console.log(`[PolicyEngine] Persisted recovery proposal & policy for ${updated.eventId} -> decision: ${policyResult.decision}, status: checked`);
 
+    // Log append-only audit events
+    const { logAuditEvent } = require('./auditLogger');
+
+    // 1. RECOVERY_PROPOSAL_CREATED
+    await logAuditEvent({
+      eventId: updated.eventId,
+      action: 'recovery_proposal',
+      decision: 'created',
+      status: 'RECOVERY_PROPOSAL_CREATED',
+      reason: `Recovery message proposal generated via ${updated.messageChannel} (${updated.messageTone} tone, proposed action: ${updated.messageAction}).`,
+      metadata: {
+        channel: updated.messageChannel,
+        tone: updated.messageTone,
+        action: updated.messageAction,
+        messagePreview: updated.recoveryMessage ? updated.recoveryMessage.slice(0, 80) : null
+      }
+    });
+
+    // 2. POLICY_EVALUATED
+    const primaryFailed = policyResult.failedChecks && policyResult.failedChecks[0];
+    await logAuditEvent({
+      eventId: updated.eventId,
+      action: 'policy_guard',
+      decision: policyResult.decision,
+      status: 'POLICY_EVALUATED',
+      reason: primaryFailed
+        ? `Policy evaluation resulted in "${policyResult.decision}". Failed check: ${primaryFailed.name} (${primaryFailed.reason})`
+        : `Policy evaluation resulted in "${policyResult.decision}". All evaluated guardrails passed.`,
+      safeAlternative: policyResult.safeAlternative,
+      metadata: {
+        totalChecks: policyResult.checks ? policyResult.checks.length : 0,
+        failedCount: policyResult.failedChecks ? policyResult.failedChecks.length : 0
+      }
+    });
+
+    // 3. Decision-specific lifecycle event
+    if (policyResult.decision === 'allow') {
+      await logAuditEvent({
+        eventId: updated.eventId,
+        action: 'recovery',
+        decision: 'allow',
+        status: 'RECOVERY_AUTHORIZED',
+        reason: 'Recovery action authorized by deterministic Policy Guard.',
+        metadata: {
+          approvedAction: updated.messageAction,
+          approvedChannel: updated.messageChannel
+        }
+      });
+    } else if (policyResult.decision === 'block') {
+      await logAuditEvent({
+        eventId: updated.eventId,
+        action: 'recovery',
+        decision: 'block',
+        status: 'RECOVERY_BLOCKED',
+        reason: primaryFailed ? primaryFailed.reason : 'Blocked by safety policy.',
+        safeAlternative: policyResult.safeAlternative
+      });
+    } else if (policyResult.decision === 'escalate') {
+      await logAuditEvent({
+        eventId: updated.eventId,
+        action: 'recovery',
+        decision: 'escalate',
+        status: 'MANUAL_REVIEW_REQUIRED',
+        reason: primaryFailed ? primaryFailed.reason : 'Escalated for human compliance review.',
+        safeAlternative: policyResult.safeAlternative
+      });
+    }
+
     // Emit 'recovery-proposal' over Socket.io with strictly safe payload
     if (io) {
       const recoveryProposalPayload = {

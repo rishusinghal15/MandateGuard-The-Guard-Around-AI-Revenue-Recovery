@@ -4,6 +4,8 @@ const express = require('express');
 const cors = require('cors');
 const { Server } = require('socket.io');
 const { startSimulator, stopSimulator } = require('./services/eventSimulator');
+const { executeSimulatedRecovery } = require('./services/simulatedRecovery');
+const { getAuditLogs } = require('./services/auditLogger');
 
 const app = express();
 const server = http.createServer(app);
@@ -26,6 +28,60 @@ app.get('/api/health', (req, res) => {
     status: 'ok',
     service: 'MandateGuard'
   });
+});
+
+// Simulated recovery execution endpoint
+app.post('/api/recovery/:eventId/simulate', async (req, res) => {
+  try {
+    const { eventId } = req.params;
+    if (!eventId) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'eventId parameter is required.'
+      });
+    }
+
+    const result = await executeSimulatedRecovery(eventId);
+
+    if (result.status === 'not_found') {
+      return res.status(404).json(result);
+    }
+
+    if (result.status === 'blocked' || result.status === 'unauthorized') {
+      return res.status(403).json(result);
+    }
+
+    if (result.status === 'manual_review') {
+      return res.status(422).json(result);
+    }
+
+    return res.status(200).json(result);
+  } catch (error) {
+    console.error('[API Error] /api/recovery/:eventId/simulate failed:', error.message);
+    return res.status(500).json({
+      status: 'error',
+      message: 'Failed to process simulated recovery.'
+    });
+  }
+});
+
+// Audit log query endpoint
+app.get('/api/audit', async (req, res) => {
+  try {
+    const { eventId, limit } = req.query;
+    const logs = await getAuditLogs({ eventId, limit });
+    return res.status(200).json({
+      status: 'ok',
+      count: logs.length,
+      auditLogs: logs
+    });
+  } catch (error) {
+    console.error('[API Error] /api/audit failed:', error.message);
+    return res.status(500).json({
+      status: 'error',
+      message: 'Failed to retrieve audit logs.'
+    });
+  }
 });
 
 // Socket.io connection handler

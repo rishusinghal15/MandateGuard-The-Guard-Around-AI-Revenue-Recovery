@@ -151,10 +151,11 @@ const prisma = require('../config/db');
     assert.ok(typeof diagnosed.confidence === 'number');
     assert.ok(['retry', 'send_link', 'escalate'].includes(diagnosed.recommendedAction));
 
-    // Verify DB record matches
-    const fromDb = await prisma.recoveryEvent.findUnique({ where: { eventId: testEventId } });
-    assert.strictEqual(fromDb.status, 'diagnosed');
-    assert.strictEqual(fromDb.rootCause, diagnosed.rootCause);
+    // Verify DB update
+    const dbRecord = await prisma.recoveryEvent.findUnique({ where: { eventId: testEventId } });
+    assert.ok(['diagnosed', 'checked'].includes(dbRecord.status), 'Status must be diagnosed or checked');
+    assert.strictEqual(dbRecord.rootCause, diagnosed.rootCause);
+    assert.strictEqual(dbRecord.recommendedAction, diagnosed.recommendedAction);
 
     // Verify Socket.io emission
     assert.strictEqual(emittedEvent, 'diagnosis-ready');

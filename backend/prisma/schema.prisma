@@ -8,38 +8,61 @@ generator client {
 }
 
 model RecoveryEvent {
-  id                 Int      @id @default(autoincrement())
-  eventId            String   @unique
-  eventType          String   // "payment_failed", "subscription_failed", "cart_abandoned"
+  id                 Int       @id @default(autoincrement())
+  eventId            String    @unique
+  eventType          String    // "payment_failed", "subscription_failed", "cart_abandoned"
   customerId         String
-  amount             Decimal  @db.Decimal(10, 2)
+  amount             Decimal   @db.Decimal(10, 2)
   failureReason      String
   timestamp          DateTime
-  recoverable        Boolean  // Hidden simulation ground truth - never exposed to AI or client
-  status             String   @default("new") // "new", "diagnosed", "decided", "checked", "executed", "blocked", "escalated"
+  recoverable        Boolean   // Hidden simulation ground truth - never exposed to AI or client
+  status             String    @default("new") // "new", "diagnosed", "decided", "checked", "executed", "blocked", "escalated"
   
   // AI Diagnosis fields
-  rootCause          String?  @db.Text
+  rootCause          String?   @db.Text
   confidence         Float?
-  recommendedAction  String?  // "retry", "send_link", "escalate"
+  recommendedAction  String?   // "retry", "send_link", "escalate"
   evidence           Json?
 
   // Recovery Message Proposal fields
-  recoveryMessage    String?  @db.Text
-  messageChannel     String?  // "sms", "email", "whatsapp"
-  messageTone        String?  // "professional", "helpful"
-  messageAction      String?  // "retry", "send_link", "escalate"
+  recoveryMessage    String?   @db.Text
+  messageChannel     String?   // "sms", "email", "whatsapp"
+  messageTone        String?   // "professional", "helpful"
+  messageAction      String?   // "retry", "send_link", "escalate"
 
   // Deterministic Policy Engine fields
-  policyDecision     String?  // "allow", "block", "escalate"
+  policyDecision     String?   // "allow", "block", "escalate"
   policyChecks       Json?
   policyFailedChecks Json?
-  safeAlternative    String?  @db.Text
+  safeAlternative    String?   @db.Text
 
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
+  // Simulated Recovery Execution fields
+  executionStatus    String?   @default("not_executed") // "not_executed", "simulated_success", "blocked", "manual_review"
+  executionReference String?
+  executedAt         DateTime?
+
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
 
   @@index([customerId])
   @@index([status])
   @@index([timestamp])
+  @@index([executionStatus])
+}
+
+model AuditLog {
+  id              Int       @id @default(autoincrement())
+  eventId         String
+  action          String    // e.g. "event_ingestion", "diagnosis", "recovery_proposal", "policy_guard", "recovery"
+  decision        String    // e.g. "recorded", "completed", "created", "allow", "block", "escalate", "simulated_success"
+  status          String    // e.g. "EVENT_RECEIVED", "AI_DIAGNOSIS_COMPLETED", "RECOVERY_PROPOSAL_CREATED", "POLICY_EVALUATED", "RECOVERY_AUTHORIZED", "RECOVERY_BLOCKED", "MANUAL_REVIEW_REQUIRED", "SIMULATED_RECOVERY_EXECUTED"
+  reason          String?   @db.Text
+  safeAlternative String?   @db.Text
+  metadata        Json?
+  timestamp       DateTime  @default(now())
+
+  @@index([eventId])
+  @@index([timestamp])
+  @@index([decision])
+  @@index([action])
 }
