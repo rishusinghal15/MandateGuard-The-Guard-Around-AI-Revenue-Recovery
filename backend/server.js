@@ -7,6 +7,7 @@ const { startSimulator, stopSimulator } = require('./services/eventSimulator');
 const { executeSimulatedRecovery } = require('./services/simulatedRecovery');
 const { getAuditLogs } = require('./services/auditLogger');
 const { getRecoveryComparison } = require('./services/comparisonService');
+const { getAvailableScenarios, runDemoScenario } = require('./services/demoScenarios');
 
 const app = express();
 const server = http.createServer(app);
@@ -29,6 +30,38 @@ app.get('/api/health', (req, res) => {
     status: 'ok',
     service: 'MandateGuard'
   });
+});
+
+// Demo Scenarios metadata endpoint
+app.get('/api/demo/scenarios', (req, res) => {
+  try {
+    const scenarios = getAvailableScenarios();
+    return res.status(200).json({
+      status: 'ok',
+      scenarios
+    });
+  } catch (error) {
+    console.error('[API Error] /api/demo/scenarios failed:', error.message);
+    return res.status(500).json({
+      status: 'error',
+      message: 'Failed to retrieve demo scenarios.'
+    });
+  }
+});
+
+// Run Demo Scenario endpoint
+app.post('/api/demo/scenarios/:scenarioId/run', async (req, res) => {
+  try {
+    const { scenarioId } = req.params;
+    const result = await runDemoScenario(scenarioId, io);
+    return res.status(200).json(result);
+  } catch (error) {
+    console.error(`[API Error] /api/demo/scenarios/${req.params.scenarioId}/run failed:`, error.message);
+    return res.status(400).json({
+      status: 'error',
+      message: error.message
+    });
+  }
 });
 
 // Simulated recovery execution endpoint

@@ -1,6 +1,7 @@
 import React from 'react';
 import { useLiveEvents } from './hooks/useLiveEvents';
 import { DashboardHeader } from './components/DashboardHeader';
+import { DemoControls } from './components/DemoControls';
 import { MetricCards } from './components/MetricCards';
 import { LiveEventFeed } from './components/LiveEventFeed';
 import { EventDetail } from './components/EventDetail';
@@ -26,6 +27,9 @@ export function App() {
 
       {/* 2. Main Container */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6">
+        {/* Judge Demo Controls */}
+        <DemoControls onScenarioTriggered={setSelectedEventId} />
+
         {/* Top Metric Cards */}
         <MetricCards metrics={metrics} />
 
