@@ -1,4 +1,5 @@
 const prisma = require('../config/db');
+const { processEventDiagnosis } = require('./diagnosisAgent');
 
 // Failure reason mappings per event type
 const FAILURE_REASONS = {
@@ -130,6 +131,11 @@ async function simulateAndPersist(io) {
       const safePayload = toSafeEventPayload(createdEvent);
       io.emit('new-event', safePayload);
     }
+
+    // Trigger AI diagnosis asynchronously without blocking simulation loop
+    processEventDiagnosis(createdEvent, io).catch((err) => {
+      console.error(`[Simulator -> Diagnosis Error] for ${createdEvent.eventId}:`, err.message);
+    });
 
     return createdEvent;
   } catch (error) {
