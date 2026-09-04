@@ -2,6 +2,14 @@
 
 > **AI proposes. Policy decides. Guardrails authorize. Everything is auditable.**
 
+## 🚀 Live Demo
+
+**[Open MandateGuard Live Demo](https://mandate-guard-the-guard-around-ai-r.vercel.app/)**
+
+*Fully deployed end-to-end demo: Vercel frontend + Render backend + Aiven MySQL.*
+
+---
+
 ![MandateGuard Dashboard](docs/dashboard.png)
 
 MandateGuard is an AI revenue recovery safety and deterministic authorization layer designed for recurring payments, subscription retries, and failed transaction workflows. It intercepts AI-generated recovery proposals and evaluates them against 9 deterministic policy guardrails before any customer-facing execution can take place.
