@@ -1,7 +1,6 @@
 # MandateGuard — Real-Time AI Revenue Recovery Agent with Compliance-Aware Guardrails
 
 **Razorpay AI Buildathon 2026 — Track 03: AI Revenue Recovery**
-**Applications close: September 5, 2026**
 
 ---
 
