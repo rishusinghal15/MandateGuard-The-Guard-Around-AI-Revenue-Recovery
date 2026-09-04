@@ -1,12 +1,9 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { PipelineStatus } from './PipelineStatus';
 import { DecisionBanner } from './DecisionBanner';
 import { DiagnosisPanel } from './DiagnosisPanel';
 import { RecoveryMessagePanel } from './RecoveryMessagePanel';
-import { PolicyGuardPanel } from './PolicyGuardPanel';
-import { RecoveryComparison } from './RecoveryComparison';
-import { AuditTrail } from './AuditTrail';
-import { Clock, CreditCard, User, AlertOctagon, HelpCircle } from 'lucide-react';
+import { Clock, User, AlertOctagon } from 'lucide-react';
 
 function formatINR(amount) {
   if (typeof amount !== 'number' || isNaN(amount)) return '₹0.00';
@@ -30,16 +27,16 @@ function formatEventType(type) {
   }
 }
 
-export function EventDetail({ event }) {
-  const [refreshTrigger, setRefreshTrigger] = useState(0);
-
+export function EventDetail({ event, onSimulationComplete }) {
   if (!event) {
     return (
-      <div className="bg-slate-800/50 border border-slate-700/60 rounded-xl p-12 text-center text-slate-400 flex flex-col items-center justify-center space-y-3">
-        <AlertOctagon className="h-10 w-10 text-slate-600" />
-        <h3 className="text-base font-semibold text-slate-300">No Event Selected</h3>
-        <p className="text-xs max-w-sm text-slate-400">
-          Select an event from the live feed on the left to inspect its real-time AI diagnosis, proposed recovery message, deterministic policy authorization, safety comparison, and immutable audit trail.
+      <div className="bg-[#0F1117] border border-[#272B36] rounded-xl p-10 text-center text-[#A7AFBF] flex flex-col items-center justify-center space-y-3 shadow-sm min-h-[400px]">
+        <div className="p-3 rounded-xl bg-[#151820] border border-[#272B36]">
+          <AlertOctagon className="h-8 w-8 text-[#6B7280]" />
+        </div>
+        <h3 className="text-sm font-semibold text-white">No Event Selected</h3>
+        <p className="text-xs max-w-sm text-[#A7AFBF] leading-relaxed">
+          Select a transaction failure from the Live Recovery Stream on the left to inspect its real-time AI diagnosis, proposed recovery message, and deterministic policy authorization.
         </p>
       </div>
     );
@@ -49,41 +46,37 @@ export function EventDetail({ event }) {
     typeof event.amount === 'number' ? event.amount : Number(event.amount) || 0
   );
 
-  const handleSimulationComplete = () => {
-    setRefreshTrigger((prev) => prev + 1);
-  };
-
   return (
-    <div className="space-y-5">
-      {/* Selected Event Context Bar */}
-      <div className="bg-slate-800/80 border border-slate-700/60 rounded-xl p-5 shadow-sm">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-700/60">
+    <div className="space-y-4">
+      {/* 1. Selected Event Context Bar */}
+      <div className="bg-[#0F1117] border border-[#272B36] rounded-xl p-4 sm:p-5 shadow-sm">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#272B36]">
           <div>
             <div className="flex items-center space-x-2.5">
-              <span className="text-xs font-mono font-bold text-indigo-400 bg-indigo-500/10 px-2.5 py-1 rounded border border-indigo-500/20">
+              <span className="text-xs font-mono font-bold text-[#7C73FF] bg-[#635BFF]/15 px-2.5 py-1 rounded border border-[#635BFF]/30">
                 {event.eventId}
               </span>
-              <span className="text-sm font-semibold text-slate-200">
+              <span className="text-sm font-bold text-white">
                 {formatEventType(event.eventType)}
               </span>
             </div>
-            <div className="flex items-center space-x-4 mt-2 text-xs text-slate-400">
+            <div className="flex items-center space-x-4 mt-2 text-xs text-[#A7AFBF]">
               <div className="flex items-center space-x-1.5">
-                <User className="h-3.5 w-3.5 text-slate-500" />
-                <span>Customer: <strong className="text-slate-300 font-mono">{event.customerId}</strong></span>
+                <User className="h-3.5 w-3.5 text-[#6B7280]" />
+                <span>Customer: <strong className="text-white font-mono">{event.customerId}</strong></span>
               </div>
               <div className="flex items-center space-x-1.5">
-                <Clock className="h-3.5 w-3.5 text-slate-500" />
-                <span>{new Date(event.timestamp).toLocaleTimeString()}</span>
+                <Clock className="h-3.5 w-3.5 text-[#6B7280]" />
+                <span className="font-mono">{new Date(event.timestamp).toLocaleTimeString()}</span>
               </div>
             </div>
           </div>
 
-          <div className="text-left md:text-right">
-            <span className="text-[10px] text-slate-400 uppercase tracking-wider block">
+          <div className="text-left sm:text-right">
+            <span className="text-[10px] text-[#A7AFBF] uppercase tracking-wider block font-mono font-medium">
               Transaction Value
             </span>
-            <div className="text-2xl font-bold text-slate-100 tracking-tight font-mono">
+            <div className="text-2xl font-extrabold text-white tracking-tight font-sans">
               {formattedAmount}
             </div>
             <span className="text-[11px] text-rose-400 font-medium">
@@ -92,38 +85,20 @@ export function EventDetail({ event }) {
           </div>
         </div>
 
-        {/* Pipeline Stage Visualization */}
-        <div className="mt-4">
+        {/* 4-Stage Security Pipeline Visualization */}
+        <div className="mt-3">
           <PipelineStatus event={event} />
         </div>
       </div>
 
-      {/* Hero Decision Banner */}
-      <DecisionBanner event={event} onSimulationComplete={handleSimulationComplete} />
+      {/* 2. Hero Decision Banner & Simulation Execution */}
+      <DecisionBanner event={event} onSimulationComplete={onSimulationComplete} />
 
-      {/* 2-Column Responsive Operational Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-        {/* Left Column: AI Diagnosis + Message Proposal */}
-        <div className="space-y-5">
-          <DiagnosisPanel event={event} />
-          <RecoveryMessagePanel event={event} />
-        </div>
+      {/* 3. AI Diagnosis Panel */}
+      <DiagnosisPanel event={event} />
 
-        {/* Right Column: Deterministic Policy Guard */}
-        <div>
-          <PolicyGuardPanel event={event} />
-        </div>
-      </div>
-
-      {/* AI Safety Comparison: Naive AI vs MandateGuard Policy Guard */}
-      <div>
-        <RecoveryComparison event={event} />
-      </div>
-
-      {/* Persistent Audit Trail Timeline */}
-      <div>
-        <AuditTrail eventId={event.eventId} refreshTrigger={refreshTrigger} />
-      </div>
+      {/* 4. Customer Recovery Message Proposal */}
+      <RecoveryMessagePanel event={event} />
     </div>
   );
 }

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Bot, ShieldCheck, ShieldAlert, ArrowRight, Zap, AlertTriangle, CheckCircle2, Lock, Sparkles } from 'lucide-react';
+import { Bot, ShieldCheck, AlertTriangle, CheckCircle2, Lock, Sparkles, ShieldAlert } from 'lucide-react';
 import axios from 'axios';
 
 const BACKEND_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001';
@@ -45,7 +45,7 @@ export function RecoveryComparison({ event }) {
 
   if (!event) {
     return (
-      <div className="bg-slate-800/80 border border-slate-700/60 rounded-xl p-6 text-center text-slate-400 text-xs">
+      <div className="bg-[#0F1117] border border-[#272B36] rounded-xl p-6 text-center text-[#A7AFBF] text-xs shadow-sm">
         Select an event to compare recovery behavior.
       </div>
     );
@@ -78,122 +78,122 @@ export function RecoveryComparison({ event }) {
   const isAllow = mandateGuard.policyDecision === 'allow';
 
   return (
-    <div className="bg-slate-800/80 border border-slate-700/60 rounded-xl p-5 shadow-sm space-y-5">
+    <div className="bg-[#0F1117] border border-[#272B36] rounded-xl p-5 shadow-sm space-y-4">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-700/60">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-[#272B36]">
         <div className="flex items-center space-x-2.5">
-          <div className="p-1.5 rounded-md bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
-            <Zap className="h-4 w-4" />
+          <div className="p-2 rounded-xl bg-indigo-950/60 text-[#7C73FF] border border-indigo-800/40">
+            <Sparkles className="h-4 w-4" />
           </div>
           <div>
-            <h3 className="text-sm font-bold text-slate-100 uppercase tracking-wide">
-              AI Safety Comparison
+            <h3 className="text-xs font-bold text-white uppercase tracking-wide">
+              AI Safety Comparison &bull; Why MandateGuard?
             </h3>
-            <p className="text-[11px] text-slate-400">
+            <p className="text-[11px] text-[#A7AFBF] font-mono">
               Same AI proposal &bull; Different authorization model
             </p>
           </div>
         </div>
 
-        <span className="text-[10px] font-mono px-2.5 py-1 rounded bg-slate-900 text-amber-400 border border-amber-500/30">
-          SIMULATION &bull; NO REAL MONEY MOVEMENT
+        <span className="text-[10px] font-mono px-2.5 py-0.5 rounded bg-amber-950/40 text-amber-300 border border-amber-800/60">
+          SIMULATION &bull; ZERO REAL MONEY MOVEMENT
         </span>
       </div>
 
       {/* Side-by-Side Comparison Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Left: NAIVE AI */}
-        <div className="bg-slate-900/70 border border-rose-500/30 rounded-xl p-4 flex flex-col justify-between space-y-3">
+        <div className="bg-rose-950/20 border border-rose-900/50 rounded-xl p-4 flex flex-col justify-between space-y-3">
           <div>
-            <div className="flex items-center justify-between pb-2 mb-3 border-b border-rose-500/20">
+            <div className="flex items-center justify-between pb-2 mb-3 border-b border-rose-900/40">
               <div className="flex items-center space-x-2">
                 <Bot className="h-4 w-4 text-rose-400" />
                 <span className="font-bold text-xs text-rose-300 uppercase tracking-wider">
                   Naive AI
                 </span>
               </div>
-              <span className="px-2 py-0.5 text-[9px] font-bold font-mono rounded bg-rose-500/20 text-rose-300 border border-rose-500/40">
+              <span className="px-2 py-0.5 text-[9px] font-bold font-mono rounded bg-rose-950/60 text-rose-300 border border-rose-800/60">
                 NO POLICY GUARD
               </span>
             </div>
 
             <div className="space-y-2.5 text-xs">
-              <div className="flex items-center justify-between bg-slate-950/60 p-2.5 rounded border border-slate-800">
-                <span className="text-[10px] text-slate-400 uppercase">Execution Behavior</span>
+              <div className="flex items-center justify-between bg-[#0F1117] p-2.5 rounded-lg border border-rose-900/40 shadow-2xs">
+                <span className="text-[10px] text-[#A7AFBF] uppercase font-mono font-medium">Execution Behavior</span>
                 <span className="font-mono font-bold text-rose-400 text-[11px]">
                   WOULD EXECUTE
                 </span>
               </div>
 
               <div>
-                <span className="text-[10px] text-slate-400 uppercase tracking-wider block mb-1">
+                <span className="text-[10px] text-[#A7AFBF] uppercase font-mono font-medium block mb-1">
                   Un-Guarded Proposal
                 </span>
-                <div className="bg-slate-950/80 p-3 rounded border border-slate-800 text-slate-300 font-sans italic text-xs leading-relaxed">
+                <div className="bg-[#0F1117] p-3 rounded-lg border border-rose-900/40 text-rose-100 font-sans italic text-xs leading-relaxed shadow-2xs">
                   "{naive.message}"
                 </div>
               </div>
 
-              <div className="flex items-center space-x-2 text-[10px] text-slate-400">
-                <span>Action: <strong className="text-slate-300 font-mono">{naive.action}</strong></span>
+              <div className="flex items-center space-x-2 text-[10px] text-[#A7AFBF] font-mono">
+                <span>Action: <strong className="text-white">{naive.action}</strong></span>
                 <span>&bull;</span>
-                <span>Channel: <strong className="text-slate-300 font-mono uppercase">{naive.channel}</strong></span>
+                <span>Channel: <strong className="text-white uppercase">{naive.channel}</strong></span>
               </div>
             </div>
           </div>
 
-          <div className="pt-2 border-t border-rose-500/20 text-[10px] text-rose-300/80 leading-relaxed bg-rose-950/20 p-2 rounded">
-            <strong>Risk Exposure:</strong> An un-guarded AI would attempt this action without policy compliance verification.
+          <div className="pt-2 border-t border-rose-900/40 text-[11px] text-rose-300 leading-relaxed bg-rose-950/40 p-2.5 rounded-lg">
+            <strong>Risk Exposure:</strong> An un-guarded AI would execute this outreach without policy compliance verification.
           </div>
         </div>
 
         {/* Right: MANDATEGUARD */}
         <div className={`border rounded-xl p-4 flex flex-col justify-between space-y-3 ${
           isBlocked
-            ? 'bg-rose-950/30 border-rose-500/50'
+            ? 'bg-rose-950/20 border-rose-900/50'
             : isEscalate
-            ? 'bg-amber-950/30 border-amber-500/50'
-            : 'bg-emerald-950/30 border-emerald-500/50'
+            ? 'bg-amber-950/20 border-amber-900/50'
+            : 'bg-emerald-950/20 border-emerald-900/50'
         }`}>
           <div>
-            <div className="flex items-center justify-between pb-2 mb-3 border-b border-slate-700/60">
+            <div className="flex items-center justify-between pb-2 mb-3 border-b border-[#272B36]">
               <div className="flex items-center space-x-2">
                 <ShieldCheck className="h-4 w-4 text-emerald-400" />
-                <span className="font-bold text-xs text-slate-100 uppercase tracking-wider">
+                <span className="font-bold text-xs text-white uppercase tracking-wider">
                   MandateGuard
                 </span>
               </div>
-              <span className="px-2 py-0.5 text-[9px] font-bold font-mono rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
+              <span className="px-2 py-0.5 text-[9px] font-bold font-mono rounded bg-emerald-950/60 text-emerald-300 border border-emerald-800/60">
                 POLICY GUARDED
               </span>
             </div>
 
             <div className="space-y-2.5 text-xs">
-              <div className="flex items-center justify-between bg-slate-950/60 p-2.5 rounded border border-slate-800">
-                <span className="text-[10px] text-slate-400 uppercase">Policy Authorization</span>
+              <div className="flex items-center justify-between bg-[#0F1117] p-2.5 rounded-lg border border-[#272B36] shadow-2xs">
+                <span className="text-[10px] text-[#A7AFBF] uppercase font-mono font-medium">Policy Authorization</span>
                 <span className={`font-mono font-bold text-[11px] px-2 py-0.5 rounded border ${
                   isBlocked
-                    ? 'bg-rose-500/20 text-rose-300 border-rose-500/40'
+                    ? 'bg-rose-950/60 text-rose-200 border-rose-700/60'
                     : isEscalate
-                    ? 'bg-amber-500/20 text-amber-300 border-amber-500/40'
-                    : 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
+                    ? 'bg-amber-950/60 text-amber-200 border-amber-700/60'
+                    : 'bg-emerald-950/60 text-emerald-200 border-emerald-700/60'
                 }`}>
                   {isBlocked ? 'BLOCKED' : isEscalate ? 'MANUAL REVIEW' : 'AUTHORIZED'}
                 </span>
               </div>
 
               <div>
-                <span className="text-[10px] text-slate-400 uppercase tracking-wider block mb-1">
+                <span className="text-[10px] text-[#A7AFBF] uppercase font-mono font-medium block mb-1">
                   Guardrail Authorization Outcome
                 </span>
-                <div className="bg-slate-950/80 p-3 rounded border border-slate-800 text-slate-200 text-xs leading-relaxed">
+                <div className="bg-[#0F1117] p-3 rounded-lg border border-[#272B36] text-[#F8FAFC] text-xs leading-relaxed shadow-2xs">
                   {isBlocked ? (
                     <div className="space-y-1">
                       <div className="text-rose-400 font-semibold flex items-center space-x-1">
                         <Lock className="h-3.5 w-3.5 flex-shrink-0" />
                         <span>{mandateGuard.failedChecks?.[0]?.name || 'Guardrail Breach'}</span>
                       </div>
-                      <p className="text-slate-300 text-[11px]">
+                      <p className="text-[#A7AFBF] text-[11px]">
                         {mandateGuard.failedChecks?.[0]?.reason || 'Unsafe recovery message blocked.'}
                       </p>
                     </div>
@@ -203,7 +203,7 @@ export function RecoveryComparison({ event }) {
                         <AlertTriangle className="h-3.5 w-3.5 flex-shrink-0" />
                         <span>Escalated to Human Review</span>
                       </div>
-                      <p className="text-slate-300 text-[11px]">
+                      <p className="text-[#A7AFBF] text-[11px]">
                         Requires manual compliance review before outreach.
                       </p>
                     </div>
@@ -213,7 +213,7 @@ export function RecoveryComparison({ event }) {
                         <CheckCircle2 className="h-3.5 w-3.5 flex-shrink-0" />
                         <span>Cleared All Guardrails</span>
                       </div>
-                      <p className="text-slate-300 text-[11px]">
+                      <p className="text-[#A7AFBF] text-[11px]">
                         Proposed action verified against deterministic compliance rules.
                       </p>
                     </div>
@@ -222,15 +222,15 @@ export function RecoveryComparison({ event }) {
               </div>
 
               {mandateGuard.safeAlternative && (
-                <div className="bg-indigo-950/40 p-2.5 rounded border border-indigo-500/30 text-[11px] text-indigo-300">
-                  <strong className="text-indigo-400 block mb-0.5">Safe Alternative Generated:</strong>
+                <div className="bg-indigo-950/40 p-2.5 rounded-lg border border-indigo-800/60 text-[11px] text-indigo-200">
+                  <strong className="text-[#7C73FF] font-mono text-[10px] block mb-0.5">SAFE ALTERNATIVE:</strong>
                   {mandateGuard.safeAlternative}
                 </div>
               )}
             </div>
           </div>
 
-          <div className="pt-2 border-t border-slate-700/60 text-[10px] text-slate-400 leading-relaxed">
+          <div className="pt-2 border-t border-[#272B36] text-[11px] text-[#A7AFBF] leading-relaxed">
             <strong>MandateGuard Protection:</strong> Zero-trust policy authorization halts non-compliant actions.
           </div>
         </div>
@@ -238,32 +238,32 @@ export function RecoveryComparison({ event }) {
 
       {/* Interception Callout Banner */}
       {interception.intercepted && (
-        <div className="bg-gradient-to-r from-rose-950/40 via-indigo-950/40 to-slate-900/60 p-3.5 rounded-lg border border-indigo-500/30 flex items-center justify-between text-xs">
+        <div className="bg-indigo-950/40 p-3 rounded-lg border border-indigo-800/60 flex items-center justify-between text-xs">
           <div className="flex items-center space-x-2.5">
-            <div className="p-1 rounded bg-amber-500/20 text-amber-400">
-              <Zap className="h-4 w-4" />
+            <div className="p-1.5 rounded-lg bg-indigo-900/60 text-[#7C73FF]">
+              <ShieldAlert className="h-4 w-4" />
             </div>
             <div>
-              <span className="font-bold text-slate-200 tracking-wide block">
-                ⚡ POLICY INTERCEPTION TRIGGERED
+              <span className="font-bold text-white tracking-wide block text-xs">
+                POLICY INTERCEPTION TRIGGERED
               </span>
-              <span className="text-[11px] text-slate-400">
+              <span className="text-[11px] text-[#A7AFBF]">
                 {interception.reason}
               </span>
             </div>
           </div>
-          <span className="text-[10px] font-mono text-indigo-300 bg-indigo-950 px-2 py-0.5 rounded border border-indigo-500/30">
+          <span className="text-[10px] font-mono text-[#7C73FF] bg-[#0F1117] px-2.5 py-1 rounded border border-[#635BFF]/40 font-semibold shadow-xs">
             DETERMINISTIC
           </span>
         </div>
       )}
 
-      {/* Judge-Friendly Architecture Explanation */}
-      <div className="p-3 bg-slate-900/60 rounded-lg border border-slate-700/40 text-center text-xs text-slate-400 space-y-1">
-        <p className="font-medium text-slate-300">
-          "MandateGuard does not replace the AI. It puts an independent authorization layer between AI intent and customer-facing execution."
+      {/* Architecture Explanation */}
+      <div className="p-3.5 bg-[#151820] rounded-lg border border-[#272B36] text-center text-xs text-[#A7AFBF] space-y-0.5">
+        <p className="font-medium text-[#F8FAFC] text-xs">
+          "MandateGuard does not replace the AI. It puts an independent authorization layer between AI intent and customer execution."
         </p>
-        <p className="text-[11px] text-indigo-400 font-mono font-semibold">
+        <p className="text-[11px] text-[#7C73FF] font-mono font-semibold">
           AI proposes &bull; Policy decides &bull; Guardrails authorize
         </p>
       </div>

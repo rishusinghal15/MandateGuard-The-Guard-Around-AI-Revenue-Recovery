@@ -1,12 +1,19 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useLiveEvents } from './hooks/useLiveEvents';
-import { DashboardHeader } from './components/DashboardHeader';
-import { DemoControls } from './components/DemoControls';
-import { MetricCards } from './components/MetricCards';
-import { LiveEventFeed } from './components/LiveEventFeed';
-import { EventDetail } from './components/EventDetail';
+import { AppShell } from './components/AppShell';
+
+// Product Views
+import { CommandCenterView } from './views/CommandCenterView';
+import { RecoveryOpsView } from './views/RecoveryOpsView';
+import { PolicyGuardView } from './views/PolicyGuardView';
+import { AuditTrailView } from './views/AuditTrailView';
+import { AnalyticsView } from './views/AnalyticsView';
+import { AiInsightsView } from './views/AiInsightsView';
+import { SettingsView } from './views/SettingsView';
 
 export function App() {
+  const [activeView, setActiveView] = useState('command_center');
+
   const {
     connectionStatus,
     events,
@@ -17,48 +24,60 @@ export function App() {
     sessionCount
   } = useLiveEvents();
 
+  const renderActiveView = () => {
+    switch (activeView) {
+      case 'command_center':
+        return (
+          <CommandCenterView
+            events={events}
+            selectedEvent={selectedEvent}
+            selectedEventId={selectedEventId}
+            onSelectEvent={setSelectedEventId}
+            metrics={metrics}
+            onNavigate={setActiveView}
+          />
+        );
+      case 'recovery_ops':
+        return (
+          <RecoveryOpsView
+            events={events}
+            onSelectEvent={setSelectedEventId}
+            onNavigate={setActiveView}
+          />
+        );
+      case 'policy_guard':
+        return <PolicyGuardView />;
+      case 'audit_trail':
+        return <AuditTrailView />;
+      case 'analytics':
+        return <AnalyticsView events={events} metrics={metrics} />;
+      case 'ai_insights':
+        return <AiInsightsView events={events} />;
+      case 'settings':
+        return <SettingsView connectionStatus={connectionStatus} />;
+      default:
+        return (
+          <CommandCenterView
+            events={events}
+            selectedEvent={selectedEvent}
+            selectedEventId={selectedEventId}
+            onSelectEvent={setSelectedEventId}
+            metrics={metrics}
+            onNavigate={setActiveView}
+          />
+        );
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-indigo-500 selection:text-white">
-      {/* 1. Header */}
-      <DashboardHeader
-        connectionStatus={connectionStatus}
-        sessionCount={sessionCount}
-      />
-
-      {/* 2. Main Container */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6">
-        {/* Judge Demo Controls */}
-        <DemoControls onScenarioTriggered={setSelectedEventId} />
-
-        {/* Top Metric Cards */}
-        <MetricCards metrics={metrics} />
-
-        {/* 2-Column Responsive Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-          {/* Left Column: Real-Time Live Feed */}
-          <div className="lg:col-span-4 xl:col-span-4">
-            <LiveEventFeed
-              events={events}
-              selectedEventId={selectedEventId}
-              onSelectEvent={setSelectedEventId}
-            />
-          </div>
-
-          {/* Right Column: Active Recovery Decision Focus */}
-          <div className="lg:col-span-8 xl:col-span-8">
-            <EventDetail event={selectedEvent} />
-          </div>
-        </div>
-      </main>
-
-      {/* Footer */}
-      <footer className="border-t border-slate-900 bg-slate-950/80 py-4 text-center text-xs text-slate-500">
-        <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
-          <span>MandateGuard Revenue Recovery &bull; Deterministic Policy Authorization</span>
-          <span className="font-mono text-[11px] text-slate-600">Simulated FinTech Runtime</span>
-        </div>
-      </footer>
-    </div>
+    <AppShell
+      activeView={activeView}
+      onNavigate={setActiveView}
+      connectionStatus={connectionStatus}
+      sessionCount={sessionCount}
+    >
+      {renderActiveView()}
+    </AppShell>
   );
 }
 
