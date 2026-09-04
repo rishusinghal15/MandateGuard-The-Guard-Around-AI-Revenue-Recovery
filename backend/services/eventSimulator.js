@@ -172,6 +172,11 @@ function startSimulator(io) {
     return;
   }
 
+  if (process.env.NODE_ENV === 'production' && process.env.ENABLE_SIMULATOR !== 'true') {
+    console.log('[Simulator] Automatic background simulation disabled in production.');
+    return;
+  }
+
   isRunning = true;
   const isDemo = process.env.DEMO_MODE === 'true';
   console.log(`[Simulator] Starting event simulator (DEMO_MODE: ${isDemo})...`);

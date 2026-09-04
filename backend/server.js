@@ -158,8 +158,12 @@ const PORT = process.env.PORT || 5001;
 if (process.env.NODE_ENV !== 'test') {
   server.listen(PORT, () => {
     console.log(`MandateGuard backend running on port ${PORT}`);
-    // Start realistic event simulator
-    startSimulator(io);
+    // Start realistic event simulator only in development or if explicitly enabled
+    if (process.env.NODE_ENV !== 'production' || process.env.ENABLE_SIMULATOR === 'true') {
+      startSimulator(io);
+    } else {
+      console.log('[Simulator] Automatic background simulation disabled in production.');
+    }
   });
 }
 
