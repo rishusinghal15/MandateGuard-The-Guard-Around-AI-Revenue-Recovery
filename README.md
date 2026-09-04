@@ -1,4 +1,4 @@
-# MandateGuard — The Guard Around AI Revenue Recovery
+# MandateGuard - The Guard Around AI Revenue Recovery
 
 > **AI proposes. Policy decides. Guardrails authorize. Everything is auditable.**
 
@@ -347,4 +347,4 @@ MandateGuard is a buildathon prototype and technical demonstration system. Its g
 
 ---
 
-*Built with ❤️ for the AI Revenue Recovery Buildathon.*
+*Built with precision for the Razorpay AI Buildathon 2026.*
