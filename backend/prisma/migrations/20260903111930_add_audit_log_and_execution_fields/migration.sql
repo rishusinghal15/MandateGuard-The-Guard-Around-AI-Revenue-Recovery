@@ -1,5 +1,5 @@
 -- AlterTable
-ALTER TABLE `recoveryevent` ADD COLUMN `executedAt` DATETIME(3) NULL,
+ALTER TABLE `RecoveryEvent` ADD COLUMN `executedAt` DATETIME(3) NULL,
     ADD COLUMN `executionReference` VARCHAR(191) NULL,
     ADD COLUMN `executionStatus` VARCHAR(191) NULL DEFAULT 'not_executed';
 
