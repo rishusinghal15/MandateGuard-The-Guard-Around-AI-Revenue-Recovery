@@ -108,7 +108,7 @@ export function SettingsView({ connectionStatus }) {
 
           <div className="bg-[#151820] p-3 rounded-lg border border-[#272B36] space-y-1 shadow-2xs">
             <span className="text-[10px] font-mono text-[#6B7280] block uppercase font-medium">AI Model</span>
-            <div className="font-bold text-white font-mono">Llama 3.3 70B</div>
+            <div className="font-bold text-white font-mono">GPT-OSS 20B</div>
             <span className="text-[10px] text-[#A7AFBF] font-mono font-medium">Groq API &bull; Advisory</span>
           </div>
         </div>

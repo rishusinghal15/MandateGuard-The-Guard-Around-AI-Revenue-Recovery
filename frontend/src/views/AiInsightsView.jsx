@@ -105,7 +105,7 @@ export function AiInsightsView({ events = [] }) {
             Inference Engine
           </span>
           <div className="text-lg font-bold text-white font-mono">
-            Groq Llama 3.3 70B
+            Groq GPT-OSS 20B
           </div>
           <span className="text-[11px] text-[#6B7280] font-mono mt-1 block">
             Structured JSON schema validation

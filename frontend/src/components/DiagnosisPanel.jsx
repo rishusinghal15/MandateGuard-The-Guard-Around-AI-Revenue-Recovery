@@ -26,7 +26,7 @@ export function DiagnosisPanel({ event }) {
             <h3 className="text-xs font-bold text-white uppercase tracking-wide">
               AI Diagnosis
             </h3>
-            <span className="text-[11px] text-[#A7AFBF] font-mono">Groq Llama 3.3 70B &bull; Advisory Only</span>
+            <span className="text-[11px] text-[#A7AFBF] font-mono">Groq GPT-OSS 20B &bull; Advisory Only</span>
           </div>
         </div>
         <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-indigo-950/40 text-indigo-300 border border-indigo-800/60">

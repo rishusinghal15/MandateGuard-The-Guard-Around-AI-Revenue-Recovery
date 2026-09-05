@@ -55,7 +55,7 @@ const VIEW_TITLES = {
   ai_insights: {
     title: 'AI Diagnostics',
     subtitle: 'Root cause analysis and advisory confidence distributions',
-    tags: 'GROQ LLAMA 70B • ADVISORY ONLY • PROPOSAL LAYER'
+    tags: 'GROQ GPT-OSS 20B • ADVISORY ONLY • PROPOSAL LAYER'
   },
   settings: {
     title: 'System Governance',
@@ -263,7 +263,7 @@ export function AppShell({
                   <span>DETERMINISTIC ZERO-TRUST</span>
                 </span>
                 <span className="inline-flex items-center px-2 py-0.5 rounded bg-[#151820] text-[#A7AFBF] text-[10px] font-mono font-medium border border-[#272B36]">
-                  GROQ LLAMA 70B
+                  GROQ GPT-OSS 20B
                 </span>
               </div>
             </div>
